@@ -49,34 +49,64 @@ const CoffeeStore = (initialProps) => {
 
   const id = router.query.id;
 
+  const createCoffeeStore = async (store) => {
+    const { id, name, address, neighborhood, imgUrl, voting } = store;
+    try {
+      const response = await fetch("/api/createCoffeeStore", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          name,
+          imgUrl,
+          voting: Number(voting) || 0,
+          neighborhood: neighborhood || "",
+          address: address || "",
+        }),
+      });
+
+      const dbCoffeeStore = await response.json();
+      console.log({ dbCoffeeStore });
+    } catch (e) {
+      console.log({ message: "error creating store", error: e });
+    }
+  };
+
   useEffect(() => {
-    if (!isEmpty(initialProps.coffeeStore)) return;
+    if (!isEmpty(initialProps.coffeeStore)) {
+      //SSG
+      createCoffeeStore(initialProps.coffeeStore);
+      return;
+    }
 
     if (!state.coffeeStores.length) return;
 
     const coffeeStore = state.coffeeStores.find((coffeeStore) => {
       return coffeeStore.id.toString() === id;
     });
-    setCoffeeStore(coffeeStore);
 
-    // if (isEmpty(initialProps.coffeeStore)) {
-    //   if (state.coffeeStores.length > 0) {
-    //     const coffeeStore = state.coffeeStores.find((coffeeStore) => {
-    //       return coffeeStore.id.toString() === id;
-    //     });
-    //     setCoffeeStore(coffeeStore);
-    //   }
-    // }
-  }, [id]);
+    if (coffeeStore) {
+      setCoffeeStore(coffeeStore);
+      createCoffeeStore(coffeeStore);
+      return;
+    }
+    //SSG
+    // createCoffeeStore(initialProps.coffeeStore);
+  }, [id, initialProps, initialProps.coffeeStore]);
 
-  if (router.isFallback) return <div>Loading...</div>;
+  // if (router.isFallback) return <div>Loading...</div>;
+  const isLoading = router.isFallback;
   const { name, address, neighborhood, imgUrl } = coffeeStore;
+  const [votingCount, setVotingCount] = useState(0);
 
   const handleUpvoteButton = () => {
     console.log("upvote");
+    setVotingCount((votingCount) => votingCount + 1);
   };
 
-  return (
+  return isLoading ? (
+    <div>Loading...</div>
+  ) : (
     <div className={styles.layout}>
       <Head>
         <title>{name}</title>
@@ -112,7 +142,7 @@ const CoffeeStore = (initialProps) => {
           </div>
           <div className={styles.iconWrapper}>
             <Image src={star} width={25} height={25} alt="location icon" />
-            <p className={styles.text}>1</p>
+            <p className={styles.text}>{votingCount}</p>
           </div>
           <button className={styles.upvoteButton} onClick={handleUpvoteButton}>
             Up vote!
