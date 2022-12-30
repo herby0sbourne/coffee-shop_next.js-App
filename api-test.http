@@ -2,14 +2,22 @@ POST http://localhost:3000/api/createCoffeeStore
 content-type: application/json
 
 {
-  "id": "0",
-  "name": "sdvsvsdv",
+  "id": "123456789",
+  "name": "this is a new store",
   "address": "clarendon 6",
   "neighborhood": "may pen clarendon",
-  "voting": 50000
+  "voting": 5
 }
 
 ###
 
 GET http://localhost:3000/api/getCoffeeStoreById?id=51438b33e4b0a40e33fe5e77
 
+###
+
+PATCH http://localhost:3000/api/favouriteCoffeeStoreById
+content-type: application/json
+
+{
+  "id": "51438b33e4b0a40e33fe5e77"
+}
