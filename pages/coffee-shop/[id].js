@@ -15,6 +15,7 @@ import nearMe from "../../public/static/icons/nearMe.svg";
 import places from "../../public/static/icons/places.svg";
 import star from "../../public/static/icons/star.svg";
 import styles from "../../styles/coffee-shop.module.css";
+import Spinner from "../../components/Spinner";
 
 export async function getStaticProps(staticProps) {
   const params = staticProps.params;
@@ -48,14 +49,17 @@ const fetcher = (url) => fetch(url).then((res) => res.json());
 
 const CoffeeStore = (initialProps) => {
   const { state } = useContext(StoreContext);
-  const [coffeeStore, setCoffeeStore] = useState(initialProps.coffeeStore);
+  const [coffeeStore, setCoffeeStore] = useState(
+    initialProps.coffeeStore || {}
+  );
+
   const router = useRouter();
-  console.log(coffeeStore);
   const id = router.query.id;
 
-  console.log({ coffeeStore });
   const createCoffeeStore = async (store) => {
-    const { id, name, address, neighborhood, imgUrl, voting } = store;
+    if (!store) return;
+    const { name, address, neighborhood, imgUrl, voting } = store;
+
     try {
       const response = await fetch("/api/createCoffeeStore", {
         method: "POST",
@@ -77,35 +81,30 @@ const CoffeeStore = (initialProps) => {
   };
 
   useEffect(() => {
-    if (initialProps.coffeeStore) {
-      //SSG
+    if (isEmpty(initialProps.coffeeStore)) {
+      if (state.coffeeStores.length > 0) {
+        const findCoffeeStoreById = state.coffeeStores.find((coffeeStore) => {
+          return coffeeStore.id.toString() === id; //dynamic id
+        });
+        // console.log("state call");
+        setCoffeeStore(findCoffeeStoreById);
+        createCoffeeStore(findCoffeeStoreById);
+      }
+    } else {
+      // SSG
+      // console.log("initial call");
       createCoffeeStore(initialProps.coffeeStore);
-      return;
     }
-    // if (!isEmpty(initialProps.coffeeStore)) {
-    //   //SSG
-    //   createCoffeeStore(initialProps.coffeeStore);
-    //   return;
-    // }
-    console.log("useEffect,", state.coffeeStores);
-    if (!state.coffeeStores.length) return;
+  }, [id, initialProps.coffeeStore, state.coffeeStores]);
 
-    const coffeeStore = state.coffeeStores.find((coffeeStore) => {
-      return coffeeStore.id.toString() === id;
-    });
-
-    if (coffeeStore) {
-      setCoffeeStore(coffeeStore);
-      createCoffeeStore(coffeeStore);
-      return;
-    }
-    //SSG
-    // createCoffeeStore(initialProps.coffeeStore);
-  }, [id, initialProps, initialProps.coffeeStore]);
-
-  if (router.isFallback) return <div>Loading...</div>;
+  // if (router.isFallback) return <div>Loading...</div>;
   // const isLoading = router.isFallback;
-  const { name, address, neighborhood, imgUrl } = coffeeStore;
+  const {
+    name = "",
+    address = "",
+    neighborhood = "",
+    imgUrl = "",
+  } = coffeeStore;
   const [votingCount, setVotingCount] = useState(0);
 
   const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher);
@@ -136,6 +135,8 @@ const CoffeeStore = (initialProps) => {
       console.log({ message: "error voting for store", error: e });
     }
   };
+
+  if (router.isFallback) return <Spinner />;
 
   if (error) {
     return <div>Something went wrong retrieving coffee store page</div>;
