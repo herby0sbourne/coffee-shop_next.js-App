@@ -34,7 +34,7 @@ export default function Home({ coffeeStores }) {
     const fetchNearByCoffeeShop = async () => {
       try {
         const response = await fetch(
-          `/api/getCoffeeStoresByLocation?latLong=${"40.7420277,-74.0684579"}&limit=${20}`
+          `/api/getCoffeeStoresByLocation?latLong=${latLong}&limit=${20}`
         );
 
         const nearByCoffeeStores = await response.json();
@@ -43,7 +43,6 @@ export default function Home({ coffeeStores }) {
         //   "40.7420277,-74.0684579",
         //   20
         // );
-        console.log(nearByCoffeeStores);
         getCoffeeStoreNearBy(nearByCoffeeStores);
       } catch (e) {
         console.log(e);
