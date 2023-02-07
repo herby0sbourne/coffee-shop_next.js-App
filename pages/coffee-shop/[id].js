@@ -1,21 +1,21 @@
-import { useContext, useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
-import Head from "next/head";
-import Link from "next/link";
-import Image from "next/image";
-import cls from "classnames";
-import useSWR from "swr";
+import Head from 'next/head';
+import Link from 'next/link';
+import Image from 'next/image';
+import cls from 'classnames';
+import useSWR from 'swr';
 
-import { fetchCoffeeStores } from "../../lib/fetchCoffeeStores";
-import { isEmpty } from "../../utils/isEmpty";
-import { StoreContext } from "../../store/storeContext";
+import { fetchCoffeeStores } from '../../lib/fetchCoffeeStores';
+import { isEmpty } from '../../utils/isEmpty';
+import { StoreContext } from '../../store/storeContext';
 
-import nearMe from "../../public/static/icons/nearMe.svg";
-import places from "../../public/static/icons/places.svg";
-import star from "../../public/static/icons/star.svg";
-import styles from "../../styles/coffee-shop.module.css";
-import Spinner from "../../components/Spinner";
+import nearMe from '../../public/static/icons/nearMe.svg';
+import places from '../../public/static/icons/places.svg';
+import star from '../../public/static/icons/star.svg';
+import styles from '../../styles/coffee-shop.module.css';
+import Spinner from '../../components/Spinner';
 
 export async function getStaticProps(staticProps) {
   const params = staticProps.params;
@@ -49,9 +49,7 @@ const fetcher = (url) => fetch(url).then((res) => res.json());
 
 const CoffeeStore = (initialProps) => {
   const { state } = useContext(StoreContext);
-  const [coffeeStore, setCoffeeStore] = useState(
-    initialProps.coffeeStore || {}
-  );
+  const [coffeeStore, setCoffeeStore] = useState(initialProps.coffeeStore || {});
 
   const router = useRouter();
   const id = router.query.id;
@@ -61,22 +59,22 @@ const CoffeeStore = (initialProps) => {
     const { name, address, neighborhood, imgUrl, voting } = store;
 
     try {
-      const response = await fetch("/api/createCoffeeStore", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/createCoffeeStore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id,
           name,
           imgUrl,
           voting: Number(voting) || 0,
-          neighborhood: neighborhood || "",
-          address: address || "",
+          neighborhood: neighborhood || '',
+          address: address || '',
         }),
       });
 
       const dbCoffeeStore = await response.json();
     } catch (e) {
-      console.log({ message: "error creating store", error: e });
+      console.log({ message: 'error creating store', error: e });
     }
   };
 
@@ -97,12 +95,7 @@ const CoffeeStore = (initialProps) => {
     }
   }, [id, initialProps.coffeeStore, state.coffeeStores]);
 
-  const {
-    name = "",
-    address = "",
-    neighborhood = "",
-    imgUrl = "",
-  } = coffeeStore;
+  const { name = '', address = '', neighborhood = '', imgUrl = '' } = coffeeStore;
   const [votingCount, setVotingCount] = useState(0);
 
   const { data, error } = useSWR(`/api/getCoffeeStoreById?id=${id}`, fetcher);
@@ -116,9 +109,9 @@ const CoffeeStore = (initialProps) => {
 
   const handleUpvoteButton = async () => {
     try {
-      const response = await fetch("/api/favouriteCoffeeStoreById", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/favouriteCoffeeStoreById', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id,
         }),
@@ -129,7 +122,7 @@ const CoffeeStore = (initialProps) => {
 
       setVotingCount((votingCount) => votingCount + 1);
     } catch (e) {
-      console.log({ message: "error voting for store", error: e });
+      console.log({ message: 'error voting for store', error: e });
     }
   };
 
@@ -143,6 +136,7 @@ const CoffeeStore = (initialProps) => {
     <div className={styles.layout}>
       <Head>
         <title>{name}</title>
+        <meta name="description" content={`${name} coffee shop`} />
       </Head>
       <div className={styles.container}>
         <div className={styles.col1}>
@@ -156,7 +150,7 @@ const CoffeeStore = (initialProps) => {
           <Image
             src={
               imgUrl ||
-              "https://imageio.forbes.com/specials-images/imageserve/60f5b60d124afbc1596f1489/0x0.jpg?format=jpg&width=1200"
+              'https://imageio.forbes.com/specials-images/imageserve/60f5b60d124afbc1596f1489/0x0.jpg?format=jpg&width=1200'
             }
             alt={`${name} image`}
             width={600}
@@ -164,7 +158,7 @@ const CoffeeStore = (initialProps) => {
             className={styles.storeImg}
           />
         </div>
-        <div className={cls("glass", styles.col2)}>
+        <div className={cls('glass', styles.col2)}>
           <div className={styles.iconWrapper}>
             <Image src={places} width={25} height={25} alt="location icon" />
             <p className={styles.text}>{address}</p>
